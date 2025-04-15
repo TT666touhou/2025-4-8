@@ -1,14 +1,15 @@
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    [Header("qœ[˜ÒŒ¹")]
+    [Header("å­å½ˆä¾†æº")]
     public BulletSpawner.Chara ownerType;
-    [Header("ŠQ")]
+    [Header("å‚·å®³")]
     public int damage = 10;
-    [Header("¶–½TŠú")]
+    [Header("ç”Ÿå‘½é€±æœŸ")]
     public float lifeTime = 5f;
 
     private Vector2 direction;
@@ -37,7 +38,7 @@ public class Bullet : MonoBehaviour
     {
         if (ownerType == BulletSpawner.Chara.Player)
         {
-            // Šß‰Æá¢Ë“Iqœ[C‘ü‘Å“Gl
+            // ç©å®¶ç™¼å°„çš„å­å½ˆï¼Œåªæ‰“æ•µäºº
             EnemyCore enemy = collision.GetComponent<EnemyCore>();
             if (enemy != null)
             {
@@ -47,7 +48,7 @@ public class Bullet : MonoBehaviour
         }
         else if (ownerType == BulletSpawner.Chara.Enemy)
         {
-            // “Glá¢Ë“Iqœ[C‘ü‘ÅŠß‰Æ
+            // æ•µäººç™¼å°„çš„å­å½ˆï¼Œåªæ‰“ç©å®¶
             PlayerControl player = collision.GetComponent<PlayerControl>();
             if (player != null)
             {
@@ -56,4 +57,10 @@ public class Bullet : MonoBehaviour
             }
         }
     }
+
+    public void Stop()
+    {
+        speed = 0f;
+    }
+
 }

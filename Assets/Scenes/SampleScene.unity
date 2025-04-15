@@ -725,7 +725,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charaType: 0
-  bulletPrefab: {fileID: 2683555456252577315, guid: 67c1b4ee139991148bc458bcd9a050c4, type: 3}
+  bulletPrefab: {fileID: 0}
   fireInterval: 0.1
   fireCount: 1
   bulletSpeed: 10
@@ -735,6 +735,9 @@ MonoBehaviour:
   fireMode: 0
   fixedDirection: {x: 1, y: 0}
   sweepSpeed: 30
+  circleRadius: 2
+  circleSpawnType: 0
+  flyOutTime: 0.5
 --- !u!1 &2110383755
 GameObject:
   m_ObjectHideFlags: 0
@@ -780,16 +783,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charaType: 1
-  bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
-  fireInterval: 0.01
-  fireCount: 3
+  bulletPrefab: {fileID: 6174256091040000580, guid: 8e1270767801c9e4ba3d24e9c9a286aa, type: 3}
+  fireInterval: 1
+  fireCount: 5
   bulletSpeed: 2
-  accuracy: 30
+  accuracy: 360
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 4
+  fireMode: 2
   fixedDirection: {x: -1, y: 0}
   sweepSpeed: 5000
+  circleRadius: 2
+  circleSpawnType: 0
+  flyOutTime: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

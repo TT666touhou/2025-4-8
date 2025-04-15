@@ -13,6 +13,7 @@ public class BulletSpawner : MonoBehaviour
         EvenSpreadToPlayer,
         SwingSweep,
         LoopSweep,
+        Circle,
         MouseAim
     }
     public enum Chara
@@ -38,6 +39,18 @@ public class BulletSpawner : MonoBehaviour
 
     [Header("旋轉掃射參數（僅 SwingSweep / LoopSweep 使用）")]
     public float sweepSpeed = 30f; // 每秒轉動的角度
+
+    public enum CircleSpawnType
+    {
+        Instant,    // 直接生成在圓上
+        FlyOut      // 從中心飛到圓上再停下來
+    }
+
+    [Header("Circle 模式專用參數")]
+    public float circleRadius = 2f;
+    public CircleSpawnType circleSpawnType = CircleSpawnType.Instant;
+    public float flyOutTime = 0.5f; // 飛到指定位置花費的時間
+
 
     private float fireTimer = 0f;
     private Transform player;
@@ -111,17 +124,67 @@ public class BulletSpawner : MonoBehaviour
     void Fire()
     {
         int actualFireCount = fireCount + Random.Range(-fireCountVariance, fireCountVariance + 1);
-        actualFireCount = Mathf.Max(1, actualFireCount); // 確保至少發一發
+        actualFireCount = Mathf.Max(1, actualFireCount); // 至少發一發
 
-        for (int i = 0; i < actualFireCount; i++)
+        if (fireMode == FireMode.Circle)
         {
-            Vector2 dir = GetFireDirection(i, actualFireCount); // ⬅ 傳進實際子彈數量
-            GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-            Bullet bulletScript = bullet.GetComponent<Bullet>();
-            if (bulletScript != null)
+            for (int i = 0; i < actualFireCount; i++)
             {
-                bulletScript.Launch(dir.normalized, bulletSpeed, charaType);
+                float angle = 360f / actualFireCount * i;
+                Vector2 offset = Quaternion.Euler(0, 0, angle) * Vector2.up * circleRadius;
+                Vector2 targetPos = (Vector2)transform.position + offset;
+
+                GameObject bullet;
+
+                if (circleSpawnType == CircleSpawnType.Instant)
+                {
+                    // 直接在圓上生成
+                    bullet = Instantiate(bulletPrefab, targetPos, Quaternion.identity);
+                    Bullet bulletScript = bullet.GetComponent<Bullet>();
+                    if (bulletScript != null)
+                    {
+                        bulletScript.Launch(Vector2.zero, 0f, charaType); // 靜止
+                    }
+                }
+                else if (circleSpawnType == CircleSpawnType.FlyOut)
+                {
+                    // 從中心飛出到目標點
+                    bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
+                    Bullet bulletScript = bullet.GetComponent<Bullet>();
+                    if (bulletScript != null)
+                    {
+                        Vector2 flyDir = (targetPos - (Vector2)transform.position).normalized;
+                        float distance = Vector2.Distance(transform.position, targetPos);
+                        float speedToReach = distance / flyOutTime;
+
+                        bulletScript.Launch(flyDir, speedToReach, charaType);
+                        bulletScript.StartCoroutine(StopBulletAfterTime(bulletScript, flyOutTime));
+                    }
+                }
             }
+        }
+
+        else
+        {
+            for (int i = 0; i < actualFireCount; i++)
+            {
+                Vector2 dir = GetFireDirection(i, actualFireCount);
+                GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
+                Bullet bulletScript = bullet.GetComponent<Bullet>();
+                if (bulletScript != null)
+                {
+                    bulletScript.Launch(dir.normalized, bulletSpeed, charaType);
+                }
+            }
+        }
+    }
+
+    private IEnumerator StopBulletAfterTime(Bullet bullet, float time)
+    {
+        yield return new WaitForSeconds(time);
+        if (bullet != null)
+        {
+            bullet.Stop();
         }
     }
 

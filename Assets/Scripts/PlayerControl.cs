@@ -42,7 +42,7 @@ public class PlayerControl : MonoBehaviour
     public void TakeDamage(int damage)
     {
         hp -= damage;
-        Debug.Log($"{gameObject.name} 被擊中，失去 {damage} HP，剩餘 HP: {hp}");
+        //Debug.Log($"{gameObject.name} 被擊中，失去 {damage} HP，剩餘 HP: {hp}");
 
         StartCoroutine(HitEffect());
 
