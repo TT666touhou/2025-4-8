@@ -31,7 +31,8 @@ public class BulletSpawner : MonoBehaviour
     public float fireInterval = 1f;
     public int fireCount = 1;
     public float bulletSpeed = 5f;
-    public float accuracy = 15f; // 角度範圍
+    public float minAngle = -15f;
+    public float maxAngle = 15f;
     public int fireCountVariance = 0;        // 子彈數量 ±變化
     public float angleJitter = 0f;           // 每發子彈 ±角度誤差（即使 accuracy = 0 也會有抖動）
     public FireMode fireMode = FireMode.FixedDirection;
@@ -50,7 +51,7 @@ public class BulletSpawner : MonoBehaviour
     public float circleRadius = 2f;
     public CircleSpawnType circleSpawnType = CircleSpawnType.Instant;
     public float flyOutTime = 0.5f; // 飛到指定位置花費的時間
-
+    public float instantspeed = 0f;
 
     private float fireTimer = 0f;
     private Transform player;
@@ -97,25 +98,30 @@ public class BulletSpawner : MonoBehaviour
             if (fireMode == FireMode.SwingSweep)
             {
                 // 超過左右界限時反向
-                if (sweepAngle > accuracy / 2f)
+                float sweepRange = maxAngle - minAngle;
+                float halfSweep = sweepRange / 2f;
+
+                if (sweepAngle > halfSweep)
                 {
-                    sweepAngle = accuracy / 2f;
+                    sweepAngle = halfSweep;
                     sweepDirection = -1f;
                 }
-                else if (sweepAngle < -accuracy / 2f)
+                else if (sweepAngle < -halfSweep)
                 {
-                    sweepAngle = -accuracy / 2f;
+                    sweepAngle = -halfSweep;
                     sweepDirection = 1f;
                 }
+
             }
 
             if (fireMode == FireMode.LoopSweep)
             {
                 // 持續遞增，循環角度
-                if (sweepAngle > accuracy / 2f)
+                if (sweepAngle > (maxAngle - minAngle) / 2f)
                 {
-                    sweepAngle = -accuracy / 2f;
+                    sweepAngle = -(maxAngle - minAngle) / 2f;
                 }
+
             }
         }
 
@@ -143,7 +149,12 @@ public class BulletSpawner : MonoBehaviour
                     Bullet bulletScript = bullet.GetComponent<Bullet>();
                     if (bulletScript != null)
                     {
-                        bulletScript.Launch(Vector2.zero, 0f, charaType); // 靜止
+                        // 計算一個預設方向（朝外）
+                        Vector2 fallbackDirection = ((Vector2)targetPos - (Vector2)transform.position).normalized;
+
+                        // 使用這個方向，但速度仍為 0
+                        bulletScript.Launch(fallbackDirection, instantspeed, charaType);
+
                     }
                 }
                 else if (circleSpawnType == CircleSpawnType.FlyOut)
@@ -211,12 +222,13 @@ public class BulletSpawner : MonoBehaviour
                 break;
 
             case FireMode.RandomSpread:
-                baseAngle = Random.Range(-accuracy / 2f, accuracy / 2f);
+                baseAngle = Random.Range(minAngle, maxAngle);
+                baseAngle =baseAngle - 90f;
                 break;
 
             case FireMode.EvenSpread:
-                float step = accuracy / count;
-                float angleOffset = -accuracy / 2f + step / 2f + step * index;
+                float step = (maxAngle - minAngle) / count;
+                float angleOffset = minAngle + step / 2f + step * index;
 
                 float baseAngleEven = Vector2.SignedAngle(Vector2.down, fixedDirection);
                 baseAngle = baseAngleEven + angleOffset;
@@ -231,10 +243,11 @@ public class BulletSpawner : MonoBehaviour
                     float centerAngle = baseSweepAngle + sweepAngle;
 
                     // ⬇ 平均分散角度（與 EvenSpread 相同）
-                    float step2 = accuracy / count;
-                    float angleOffset2 = -accuracy / 2f + step2 / 2f + step2 * index;
+                    float stepL = (maxAngle - minAngle) / count;
+                    float angleOffsetL = minAngle + stepL / 2f + stepL * index;
 
-                    baseAngle = centerAngle + angleOffset2;
+
+                    baseAngle = centerAngle + angleOffsetL;
                     break;
                 }
 
@@ -242,8 +255,9 @@ public class BulletSpawner : MonoBehaviour
             case FireMode.EvenSpreadToPlayer:
                 if (player != null)
                 {
-                    float stepE = accuracy / count;
-                    float angleOffsetE = -accuracy / 2f + stepE / 2f + stepE * index;
+                    float stepE = (maxAngle - minAngle) / count;
+                    float angleOffsetE = minAngle + stepE / 2f + stepE * index;
+
                     float angleToPlayerE = Vector2.SignedAngle(Vector2.down, (player.position - transform.position).normalized);
                     baseAngle = angleToPlayerE + angleOffsetE;
                 }

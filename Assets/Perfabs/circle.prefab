@@ -66,9 +66,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6002748397040011960, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
       propertyPath: lifeTime
-      value: 1.1
+      value: 0.45
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 200829065009743597, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -94,16 +95,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charaType: 1
-  bulletPrefab: {fileID: 6174256091040000580}
-  fireInterval: 1
-  fireCount: 30
-  bulletSpeed: 5
-  accuracy: 15
+  bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
+  fireInterval: 0.4
+  fireCount: 20
+  bulletSpeed: 2
+  accuracy: 360
   fireCountVariance: 0
   angleJitter: 0
   fireMode: 7
   fixedDirection: {x: 0, y: -1}
   sweepSpeed: 30
-  circleRadius: 3
+  circleRadius: 2
   circleSpawnType: 1
-  flyOutTime: 2
+  flyOutTime: 1
