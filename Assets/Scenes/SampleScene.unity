@@ -199,7 +199,7 @@ Transform:
   m_GameObject: {fileID: 226434619}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7, y: 0, z: 0}
+  m_LocalPosition: {x: 4.98, y: 0, z: 0}
   m_LocalScale: {x: 0.15, y: 0.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -735,11 +735,12 @@ MonoBehaviour:
   angleJitter: 0
   fireMode: 0
   fixedDirection: {x: 1, y: 0}
+  maxFireCycles: -1
+  cooldownAfterCycle: 3
+  fireImmediately: 1
+  alternateRotationDirection: 0
+  rotationToggleInterval: 2
   sweepSpeed: 30
-  circleRadius: 2
-  circleSpawnType: 0
-  flyOutTime: 0.5
-  instantspeed: 0
 --- !u!1 &2110383755
 GameObject:
   m_ObjectHideFlags: 0
@@ -752,7 +753,7 @@ GameObject:
   - component: {fileID: 2110383757}
   m_Layer: 0
   m_Name: EB_1
-  m_TagString: Untagged
+  m_TagString: OrbitCenter
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -786,20 +787,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charaType: 1
   bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
-  fireInterval: 1
+  fireInterval: 0.2
   fireCount: 5
-  bulletSpeed: 3
-  minAngle: -90
-  maxAngle: 90
+  bulletSpeed: 1
+  minAngle: -180
+  maxAngle: 180
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 7
+  fireMode: 3
   fixedDirection: {x: -1, y: 0}
+  maxFireCycles: -1
+  cooldownAfterCycle: 0
+  fireImmediately: 1
+  alternateRotationDirection: 0
+  rotationToggleInterval: 1
   sweepSpeed: 5000
-  circleRadius: 2
-  circleSpawnType: 0
-  flyOutTime: 0.5
-  instantspeed: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

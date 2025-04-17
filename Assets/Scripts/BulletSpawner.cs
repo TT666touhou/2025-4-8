@@ -13,7 +13,6 @@ public class BulletSpawner : MonoBehaviour
         EvenSpreadToPlayer,
         SwingSweep,
         LoopSweep,
-        Circle,
         MouseAim
     }
     public enum Chara
@@ -37,6 +36,17 @@ public class BulletSpawner : MonoBehaviour
     public float angleJitter = 0f;           // 每發子彈 ±角度誤差（即使 accuracy = 0 也會有抖動）
     public FireMode fireMode = FireMode.FixedDirection;
     public Vector2 fixedDirection = Vector2.down;
+    [Tooltip("-1 表示無限次")]
+    public int maxFireCycles = -1; // -1 = infinite
+    public float cooldownAfterCycle = 3f;
+    public bool fireImmediately = true;
+    [Header("方向切換設定")]
+    public bool alternateRotationDirection = false;
+    public float rotationToggleInterval = 2f;
+
+    private bool currentRotationClockwise = true;
+    private float rotationToggleTimer = 0f;
+
 
     [Header("旋轉掃射參數（僅 SwingSweep / LoopSweep 使用）")]
     public float sweepSpeed = 30f; // 每秒轉動的角度
@@ -47,32 +57,61 @@ public class BulletSpawner : MonoBehaviour
         FlyOut      // 從中心飛到圓上再停下來
     }
 
-    [Header("Circle 模式專用參數")]
-    public float circleRadius = 2f;
-    public CircleSpawnType circleSpawnType = CircleSpawnType.Instant;
-    public float flyOutTime = 0.5f; // 飛到指定位置花費的時間
-    public float instantspeed = 0f;
 
     private float fireTimer = 0f;
     private Transform player;
     private float sweepAngle = 0f;
     private float sweepDirection = 1f; // 1 = 正向，-1 = 反向
+    private int fireCycleCount = 0;
+    private bool isCoolingDown = false;
 
     void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
+
+        // 🔁 根據 prefab 中 OrbitAroundTargetBehavior 的 clockwise 設定初始化 spawner 預設方向
+        var orbit = bulletPrefab != null ? bulletPrefab.GetComponent<OrbitAroundTargetBehavior>() : null;
+        if (orbit != null)
+        {
+            currentRotationClockwise = orbit.clockwise;
+        }
+
+        // 控制是否立即開火
+        if (!fireImmediately)
+            fireTimer = 0f;
+        else
+            fireTimer = fireInterval; // 強制讓第一次可立即進入 Fire()
     }
+
+
 
     void Update()
     {
+        if (isCoolingDown) return;
+
         fireTimer += Time.deltaTime;
+
+
+        bool canFire = fireTimer >= fireInterval && (maxFireCycles == -1 || fireCycleCount < maxFireCycles);
+
+
+        // 每 rotationToggleInterval 秒切換一次方向（不會影響已存在子彈）
+        if (alternateRotationDirection)
+        {
+            rotationToggleTimer += Time.deltaTime;
+            if (rotationToggleTimer >= rotationToggleInterval)
+            {
+                currentRotationClockwise = !currentRotationClockwise;
+                rotationToggleTimer = 0f;
+            }
+        }
 
         // 🟡 玩家角色：必須按下空白鍵才可開火
         if (charaType == Chara.Player)
         {
-            if (Input.GetKey(KeyCode.Space) && fireTimer >= fireInterval)
+            if (Input.GetKey(KeyCode.Space) && canFire)
             {
                 fireTimer = 0f;
                 Fire();
@@ -81,11 +120,19 @@ public class BulletSpawner : MonoBehaviour
         // 🔴 敵人角色：自動開火
         else if (charaType == Chara.Enemy)
         {
-            if (fireTimer >= fireInterval)
+            if (canFire)
             {
                 fireTimer = 0f;
                 Fire();
             }
+        }
+
+        //==========================================================//
+
+        // 處理冷卻：若達到上限，開始冷卻
+        if (maxFireCycles != -1 && fireCycleCount >= maxFireCycles)
+        {
+            StartCoroutine(RestartAfterCooldown());
         }
 
         //===========================================================//
@@ -127,68 +174,55 @@ public class BulletSpawner : MonoBehaviour
 
     }
 
+    private IEnumerator RestartAfterCooldown()
+    {
+        isCoolingDown = true;
+        yield return new WaitForSeconds(cooldownAfterCycle);
+        fireCycleCount = 0;
+        isCoolingDown = false;
+    }
+
     void Fire()
     {
+        fireCycleCount++;
+
         int actualFireCount = fireCount + Random.Range(-fireCountVariance, fireCountVariance + 1);
         actualFireCount = Mathf.Max(1, actualFireCount); // 至少發一發
 
-        if (fireMode == FireMode.Circle)
+        
+
+        
+        
+         for (int i = 0; i < actualFireCount; i++)
+         {
+             Vector2 dir = GetFireDirection(i, actualFireCount);
+             GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
+             Bullet bulletScript = bullet.GetComponent<Bullet>();
+             if (bulletScript != null)
+             {
+                 bulletScript.Launch(dir.normalized, bulletSpeed, charaType);
+                 ApplyRotationDirection(bulletScript);
+             }
+         }
+    }
+
+    private void ApplyRotationDirection(Bullet bullet)
+    {
+        if (bullet == null) return;
+
+        RotateDirectionBehavior rotateBehavior = bullet.GetComponent<RotateDirectionBehavior>();
+        if (rotateBehavior != null)
         {
-            for (int i = 0; i < actualFireCount; i++)
-            {
-                float angle = 360f / actualFireCount * i;
-                Vector2 offset = Quaternion.Euler(0, 0, angle) * Vector2.up * circleRadius;
-                Vector2 targetPos = (Vector2)transform.position + offset;
-
-                GameObject bullet;
-
-                if (circleSpawnType == CircleSpawnType.Instant)
-                {
-                    // 直接在圓上生成
-                    bullet = Instantiate(bulletPrefab, targetPos, Quaternion.identity);
-                    Bullet bulletScript = bullet.GetComponent<Bullet>();
-                    if (bulletScript != null)
-                    {
-                        // 計算一個預設方向（朝外）
-                        Vector2 fallbackDirection = ((Vector2)targetPos - (Vector2)transform.position).normalized;
-
-                        // 使用這個方向，但速度仍為 0
-                        bulletScript.Launch(fallbackDirection, instantspeed, charaType);
-
-                    }
-                }
-                else if (circleSpawnType == CircleSpawnType.FlyOut)
-                {
-                    // 從中心飛出到目標點
-                    bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-                    Bullet bulletScript = bullet.GetComponent<Bullet>();
-                    if (bulletScript != null)
-                    {
-                        Vector2 flyDir = (targetPos - (Vector2)transform.position).normalized;
-                        float distance = Vector2.Distance(transform.position, targetPos);
-                        float speedToReach = distance / flyOutTime;
-
-                        bulletScript.Launch(flyDir, speedToReach, charaType);
-                        bulletScript.StartCoroutine(StopBulletAfterTime(bulletScript, flyOutTime));
-                    }
-                }
-            }
+            rotateBehavior.clockwise = currentRotationClockwise;
         }
 
-        else
+        OrbitAroundTargetBehavior orbit = bullet.GetComponent<OrbitAroundTargetBehavior>();
+        if (orbit != null)
         {
-            for (int i = 0; i < actualFireCount; i++)
-            {
-                Vector2 dir = GetFireDirection(i, actualFireCount);
-                GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-                Bullet bulletScript = bullet.GetComponent<Bullet>();
-                if (bulletScript != null)
-                {
-                    bulletScript.Launch(dir.normalized, bulletSpeed, charaType);
-                }
-            }
+            orbit.clockwise = currentRotationClockwise;
         }
     }
+
 
     private IEnumerator StopBulletAfterTime(Bullet bullet, float time)
     {
