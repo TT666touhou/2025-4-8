@@ -200,7 +200,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.98, y: 0, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2110383756}
@@ -638,7 +638,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -8, y: 0, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 1}
+  m_LocalScale: {x: 0.05, y: 0.05, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1693551045}
@@ -735,12 +735,19 @@ MonoBehaviour:
   angleJitter: 0
   fireMode: 0
   fixedDirection: {x: 1, y: 0}
+  globalAngleOffset: 0
+  spawnOffsetDistance: 0
   maxFireCycles: -1
   cooldownAfterCycle: 3
   fireImmediately: 1
   alternateRotationDirection: 0
   rotationToggleInterval: 2
+  parallelBulletCount: 1
+  parallelSpacing: 0.1
+  parallelAngleSpread: 0
   sweepSpeed: 30
+  enableFireAngleInversion: 0
+  fireAngleInversionInterval: 3
 --- !u!1 &2110383755
 GameObject:
   m_ObjectHideFlags: 0
@@ -788,20 +795,27 @@ MonoBehaviour:
   charaType: 1
   bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
   fireInterval: 0.2
-  fireCount: 5
-  bulletSpeed: 1
+  fireCount: 1
+  bulletSpeed: 3.5
   minAngle: -180
   maxAngle: 180
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 3
+  fireMode: 6
   fixedDirection: {x: -1, y: 0}
+  globalAngleOffset: 0
+  spawnOffsetDistance: 0
   maxFireCycles: -1
   cooldownAfterCycle: 0
   fireImmediately: 1
   alternateRotationDirection: 0
   rotationToggleInterval: 1
+  parallelBulletCount: 9
+  parallelSpacing: 1
+  parallelAngleSpread: 60
   sweepSpeed: 5000
+  enableFireAngleInversion: 0
+  fireAngleInversionInterval: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

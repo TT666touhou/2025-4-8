@@ -36,6 +36,9 @@ public class BulletSpawner : MonoBehaviour
     public float angleJitter = 0f;           // 每發子彈 ±角度誤差（即使 accuracy = 0 也會有抖動）
     public FireMode fireMode = FireMode.FixedDirection;
     public Vector2 fixedDirection = Vector2.down;
+    public float globalAngleOffset = 0f;
+    [Tooltip("子彈初始生成與 Spawner 的距離（0 表示重疊）")]
+    public float spawnOffsetDistance = 0f;
     [Tooltip("-1 表示無限次")]
     public int maxFireCycles = -1; // -1 = infinite
     public float cooldownAfterCycle = 3f;
@@ -43,6 +46,17 @@ public class BulletSpawner : MonoBehaviour
     [Header("方向切換設定")]
     public bool alternateRotationDirection = false;
     public float rotationToggleInterval = 2f;
+
+    [Header("子彈組（平行線）設定")]
+    [Tooltip("每個發射方向的子彈數（最少 1）")]
+    public int parallelBulletCount = 1;
+
+    [Tooltip("每顆子彈之間的垂直間隔（單位：世界單位）")]
+    public float parallelSpacing = 0.1f;
+
+    [Tooltip("子彈組的角度發散總量（0 表示平行）")]
+    public float parallelAngleSpread = 0f;
+
 
     private bool currentRotationClockwise = true;
     private float rotationToggleTimer = 0f;
@@ -57,6 +71,13 @@ public class BulletSpawner : MonoBehaviour
         FlyOut      // 從中心飛到圓上再停下來
     }
 
+    [Header("開火方向反轉設定")]
+    [Tooltip("是否啟用定時反轉開火角度")]
+    public bool enableFireAngleInversion = false;
+
+    [Tooltip("每隔幾秒反轉一次角度（180 度）")]
+    public float fireAngleInversionInterval = 3f;
+
 
     private float fireTimer = 0f;
     private Transform player;
@@ -64,6 +85,10 @@ public class BulletSpawner : MonoBehaviour
     private float sweepDirection = 1f; // 1 = 正向，-1 = 反向
     private int fireCycleCount = 0;
     private bool isCoolingDown = false;
+    private float inversionTimer = 0f;
+    private bool isAngleInverted = false;
+
+
 
     void Start()
     {
@@ -137,6 +162,19 @@ public class BulletSpawner : MonoBehaviour
 
         //===========================================================//
 
+        // 控制角度反轉邏輯
+        if (enableFireAngleInversion)
+        {
+            inversionTimer += Time.deltaTime;
+            if (inversionTimer >= fireAngleInversionInterval)
+            {
+                inversionTimer = 0f;
+                isAngleInverted = !isAngleInverted;
+            }
+        }
+
+        //===========================================================//
+
         // 控制 Sweep 角度更新
         if (fireMode == FireMode.SwingSweep || fireMode == FireMode.LoopSweep)
         {
@@ -195,15 +233,36 @@ public class BulletSpawner : MonoBehaviour
         
          for (int i = 0; i < actualFireCount; i++)
          {
-             Vector2 dir = GetFireDirection(i, actualFireCount);
-             GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
-             Bullet bulletScript = bullet.GetComponent<Bullet>();
-             if (bulletScript != null)
-             {
-                 bulletScript.Launch(dir.normalized, bulletSpeed, charaType);
-                 ApplyRotationDirection(bulletScript);
-             }
-         }
+            Vector2 dir = GetFireDirection(i, actualFireCount).normalized;
+            Vector2 perp = new Vector2(-dir.y, dir.x); // 對應的垂直方向
+
+            int subCount = Mathf.Max(1, parallelBulletCount);
+            float totalSpan = (subCount - 1) * parallelSpacing;
+            float angleStep = (subCount > 1) ? parallelAngleSpread / (subCount - 1) : 0f;
+
+            for (int j = 0; j < subCount; j++)
+            {
+                // 中心置中偏移
+                float offsetAmount = j * parallelSpacing - totalSpan / 2f;
+                Vector2 spawnCenter = (Vector2)transform.position + dir * spawnOffsetDistance;
+                Vector2 spawnPos = spawnCenter + perp * offsetAmount;
+
+
+                // 發散角度控制
+                float spreadAngle = -parallelAngleSpread / 2f + angleStep * j;
+                Quaternion spreadRot = Quaternion.Euler(0, 0, spreadAngle);
+                Vector2 finalDir = spreadRot * dir;
+
+                GameObject bullet = Instantiate(bulletPrefab, spawnPos, Quaternion.identity);
+                Bullet bulletScript = bullet.GetComponent<Bullet>();
+                if (bulletScript != null)
+                {
+                    bulletScript.Launch(finalDir, bulletSpeed, charaType);
+                    ApplyRotationDirection(bulletScript);
+                }
+            }
+
+        }
     }
 
     private void ApplyRotationDirection(Bullet bullet)
@@ -223,15 +282,6 @@ public class BulletSpawner : MonoBehaviour
         }
     }
 
-
-    private IEnumerator StopBulletAfterTime(Bullet bullet, float time)
-    {
-        yield return new WaitForSeconds(time);
-        if (bullet != null)
-        {
-            bullet.Stop();
-        }
-    }
 
 
     Vector2 GetFireDirection(int index, int count)
@@ -304,9 +354,14 @@ public class BulletSpawner : MonoBehaviour
 
         // 加入隨機誤差（angleJitter）
         float jitter = Random.Range(-angleJitter, angleJitter);
-        float finalAngle = baseAngle + jitter;
+        float finalAngle = baseAngle + jitter + globalAngleOffset;
+
+        // 加入角度反轉邏輯
+        if (isAngleInverted)
+            finalAngle += 180f;
 
         return Quaternion.Euler(0, 0, finalAngle) * Vector2.down;
+
     }
 
 }
