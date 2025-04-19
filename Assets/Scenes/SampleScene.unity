@@ -745,6 +745,8 @@ MonoBehaviour:
   parallelBulletCount: 1
   parallelSpacing: 0.1
   parallelAngleSpread: 0
+  parallelSpawnDelay: 0
+  centerFiresFirst: 1
   sweepSpeed: 30
   enableFireAngleInversion: 0
   fireAngleInversionInterval: 3
@@ -794,26 +796,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   charaType: 1
   bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
-  fireInterval: 0.2
+  fireInterval: 0.02
   fireCount: 1
   bulletSpeed: 3.5
   minAngle: -180
   maxAngle: 180
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 6
+  fireMode: 3
   fixedDirection: {x: -1, y: 0}
   globalAngleOffset: 0
   spawnOffsetDistance: 0
-  maxFireCycles: -1
-  cooldownAfterCycle: 0
+  maxFireCycles: 10
+  cooldownAfterCycle: 0.5
   fireImmediately: 1
-  alternateRotationDirection: 0
-  rotationToggleInterval: 1
-  parallelBulletCount: 9
-  parallelSpacing: 1
+  alternateRotationDirection: 1
+  rotationToggleInterval: 0.7
+  parallelBulletCount: 10
+  parallelSpacing: 0.1
   parallelAngleSpread: 60
-  sweepSpeed: 5000
+  parallelSpawnDelay: 0.1
+  centerFiresFirst: 1
+  sweepSpeed: 120
   enableFireAngleInversion: 0
   fireAngleInversionInterval: 3
 --- !u!1660057539 &9223372036854775807

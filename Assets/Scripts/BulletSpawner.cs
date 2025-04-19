@@ -50,16 +50,15 @@ public class BulletSpawner : MonoBehaviour
     [Header("子彈組（平行線）設定")]
     [Tooltip("每個發射方向的子彈數（最少 1）")]
     public int parallelBulletCount = 1;
-
     [Tooltip("每顆子彈之間的垂直間隔（單位：世界單位）")]
     public float parallelSpacing = 0.1f;
-
     [Tooltip("子彈組的角度發散總量（0 表示平行）")]
     public float parallelAngleSpread = 0f;
+    [Tooltip("子彈組中每顆子彈的生成延遲時間（由中心向外）")]
+    public float parallelSpawnDelay = 0f;
+    [Tooltip("是否讓中心的子彈最先生成（勾選代表由內往外）")]
+    public bool centerFiresFirst = true;
 
-
-    private bool currentRotationClockwise = true;
-    private float rotationToggleTimer = 0f;
 
 
     [Header("旋轉掃射參數（僅 SwingSweep / LoopSweep 使用）")]
@@ -87,6 +86,8 @@ public class BulletSpawner : MonoBehaviour
     private bool isCoolingDown = false;
     private float inversionTimer = 0f;
     private bool isAngleInverted = false;
+    private bool currentRotationClockwise = true;
+    private float rotationToggleTimer = 0f;
 
 
 
@@ -96,7 +97,7 @@ public class BulletSpawner : MonoBehaviour
         if (playerObj != null)
             player = playerObj.transform;
 
-        // 🔁 根據 prefab 中 OrbitAroundTargetBehavior 的 clockwise 設定初始化 spawner 預設方向
+        // 根據 prefab 中 OrbitAroundTargetBehavior 的 clockwise 設定初始化 spawner 預設方向
         var orbit = bulletPrefab != null ? bulletPrefab.GetComponent<OrbitAroundTargetBehavior>() : null;
         if (orbit != null)
         {
@@ -253,17 +254,44 @@ public class BulletSpawner : MonoBehaviour
                 Quaternion spreadRot = Quaternion.Euler(0, 0, spreadAngle);
                 Vector2 finalDir = spreadRot * dir;
 
-                GameObject bullet = Instantiate(bulletPrefab, spawnPos, Quaternion.identity);
-                Bullet bulletScript = bullet.GetComponent<Bullet>();
-                if (bulletScript != null)
-                {
-                    bulletScript.Launch(finalDir, bulletSpeed, charaType);
-                    ApplyRotationDirection(bulletScript);
-                }
+                float delay = GetParallelDelay(j, subCount);
+                StartCoroutine(SpawnDelayedBullet(delay, spawnPos, finalDir));
+
             }
 
         }
     }
+
+    private float GetParallelDelay(int index, int count)
+    {
+        int centerIndex = (count - 1) / 2;
+        int distanceFromCenter = Mathf.Abs(index - centerIndex);
+
+        if (centerFiresFirst)
+        {
+            return parallelSpawnDelay * distanceFromCenter; // 原本：中心先出
+        }
+        else
+        {
+            // 反過來：離中心越近延遲越大（邊邊先出）
+            int maxDistance = (count - 1) / 2;
+            return parallelSpawnDelay * (maxDistance - distanceFromCenter);
+        }
+    }
+
+
+    private IEnumerator SpawnDelayedBullet(float delay, Vector2 position, Vector2 direction)
+    {
+        yield return new WaitForSeconds(delay);
+        GameObject bullet = Instantiate(bulletPrefab, position, Quaternion.identity);
+        Bullet bulletScript = bullet.GetComponent<Bullet>();
+        if (bulletScript != null)
+        {
+            bulletScript.Launch(direction, bulletSpeed, charaType);
+            ApplyRotationDirection(bulletScript);
+        }
+    }
+
 
     private void ApplyRotationDirection(Bullet bullet)
     {
