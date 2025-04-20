@@ -1,0 +1,108 @@
+﻿// GameSystem.cs
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GameSystem : MonoBehaviour
+{
+    [Header("玩家設定")]
+    public GameObject playerPrefab;
+    [Header("玩家出生點（留空則使用座標）")]
+    public Transform playerSpawnPoint;
+    public Vector3 fallbackSpawnPosition = new Vector3(0f, -3f, 0f);
+    public int maxLives = 3;
+
+    [Header("敵人 Prefab 設定")]
+    public List<GameObject> enemyPrefabs = new List<GameObject>();
+
+    private GameObject currentPlayer;
+    private int currentLives;
+    private float gameTime;
+
+    [Header("管理中敵人")]
+    private List<GameObject> activeEnemies = new List<GameObject>();
+
+    private TimelineManager timelineManager = new TimelineManager();
+
+    void Start()
+    {
+        currentLives = maxLives;
+        SpawnPlayer();
+
+        // 使用第一個敵人 prefab（需在 Inspector 中指派）
+        if (enemyPrefabs.Count > 0)
+        {
+            AddTimelineEvent(new SpawnEnemyEvent
+            {
+                triggerTime = 2f,
+                enemyPrefab = enemyPrefabs[0],
+                position = new Vector2(0, 4),
+                hp = 120
+            });
+        }
+
+        AddTimelineEvent(new SpawnerModifyEvent
+        {
+            triggerTime = 5f,
+            targetEnemyName = "Enemy(Clone)",
+            spawnerObjectName = "EB_2",
+            configAction = (s) =>
+            {
+                s.fireCount = 3;
+                s.fireMode = BulletSpawner.FireMode.EvenSpread;
+                s.bulletSpeed = 6f;
+                s.canFire = true;
+            }
+        });
+    }
+
+    void Update()
+    {
+        gameTime += Time.deltaTime;
+        timelineManager.Update(Time.deltaTime);
+    }
+
+    public void AddTimelineEvent(TimelineEvent evt)
+    {
+        timelineManager.AddEvent(evt);
+    }
+
+    // ========= 玩家管理 ========= //
+    public void OnPlayerDeath()
+    {
+        currentLives--;
+
+        if (currentLives > 0)
+        {
+            Debug.Log($"玩家復活，剩餘殘機：{currentLives}");
+            Invoke(nameof(SpawnPlayer), 1.5f);
+        }
+        else
+        {
+            Debug.Log("Game Over！");
+            // TODO: 顯示結束畫面
+        }
+    }
+
+    public void SpawnPlayer()
+    {
+        Vector3 pos = playerSpawnPoint != null ? playerSpawnPoint.position : fallbackSpawnPosition;
+        currentPlayer = Instantiate(playerPrefab, pos, Quaternion.identity);
+    }
+
+    // ========= 敵人管理 ========= //
+    public void RegisterEnemy(GameObject enemy)
+    {
+        if (!activeEnemies.Contains(enemy))
+            activeEnemies.Add(enemy);
+    }
+
+    public void UnregisterEnemy(GameObject enemy)
+    {
+        if (activeEnemies.Contains(enemy))
+            activeEnemies.Remove(enemy);
+    }
+
+    public List<GameObject> GetActiveEnemies() => activeEnemies;
+    public float GetGameTime() => gameTime;
+} // END GameSystem.cs

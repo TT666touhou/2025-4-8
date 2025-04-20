@@ -49,8 +49,10 @@ public class PlayerControl : MonoBehaviour
         if (hp <= 0)
         {
             Debug.Log("玩家死亡！");
+            FindObjectOfType<GameSystem>()?.OnPlayerDeath();
             Destroy(gameObject);
         }
+
     }
 
     IEnumerator HitEffect()

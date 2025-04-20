@@ -24,6 +24,9 @@ public class BulletSpawner : MonoBehaviour
     [Header("角色設定")]
     public Chara charaType = Chara.Enemy;
 
+    [Header("開火啟用控制")]
+    [Tooltip("是否允許這個 Spawner 開火（false 將完全禁止開火）")]
+    public bool canFire = true;
 
     [Header("射擊參數")]
     public GameObject bulletPrefab;
@@ -59,6 +62,15 @@ public class BulletSpawner : MonoBehaviour
     [Tooltip("是否讓中心的子彈最先生成（勾選代表由內往外）")]
     public bool centerFiresFirst = true;
 
+    [Header("子彈組（水平方向）設定")]
+    [Tooltip("水平方向的子彈數（最少 1）")]
+    public int horizontalBulletCount = 1;
+    [Tooltip("水平方向子彈之間的間隔（單位：世界單位）")]
+    public float horizontalSpacing = 0.1f;
+    [Tooltip("水平方向子彈的生成延遲（由中間向兩側）")]
+    public float horizontalSpawnDelay = 0f;
+    [Tooltip("是否讓中間的子彈先生成")]
+    public bool horizontalCenterFiresFirst = true;
 
 
     [Header("旋轉掃射參數（僅 SwingSweep / LoopSweep 使用）")]
@@ -116,11 +128,12 @@ public class BulletSpawner : MonoBehaviour
     void Update()
     {
         if (isCoolingDown) return;
+        if (!canFire) return;
 
         fireTimer += Time.deltaTime;
 
 
-        bool canFire = fireTimer >= fireInterval && (maxFireCycles == -1 || fireCycleCount < maxFireCycles);
+        bool readyToFire= fireTimer >= fireInterval && (maxFireCycles == -1 || fireCycleCount < maxFireCycles);
 
 
         // 每 rotationToggleInterval 秒切換一次方向（不會影響已存在子彈）
@@ -137,7 +150,7 @@ public class BulletSpawner : MonoBehaviour
         // 🟡 玩家角色：必須按下空白鍵才可開火
         if (charaType == Chara.Player)
         {
-            if (Input.GetKey(KeyCode.Space) && canFire)
+            if (Input.GetKey(KeyCode.Space) && readyToFire)
             {
                 fireTimer = 0f;
                 Fire();
@@ -146,7 +159,7 @@ public class BulletSpawner : MonoBehaviour
         // 🔴 敵人角色：自動開火
         else if (charaType == Chara.Enemy)
         {
-            if (canFire)
+            if (readyToFire)
             {
                 fireTimer = 0f;
                 Fire();
@@ -237,30 +250,57 @@ public class BulletSpawner : MonoBehaviour
             Vector2 dir = GetFireDirection(i, actualFireCount).normalized;
             Vector2 perp = new Vector2(-dir.y, dir.x); // 對應的垂直方向
 
+            // 發散角度控制
             int subCount = Mathf.Max(1, parallelBulletCount);
             float totalSpan = (subCount - 1) * parallelSpacing;
             float angleStep = (subCount > 1) ? parallelAngleSpread / (subCount - 1) : 0f;
 
             for (int j = 0; j < subCount; j++)
             {
-                // 中心置中偏移
                 float offsetAmount = j * parallelSpacing - totalSpan / 2f;
                 Vector2 spawnCenter = (Vector2)transform.position + dir * spawnOffsetDistance;
-                Vector2 spawnPos = spawnCenter + perp * offsetAmount;
+                Vector2 verticalPos = spawnCenter + perp * offsetAmount;
 
-
-                // 發散角度控制
                 float spreadAngle = -parallelAngleSpread / 2f + angleStep * j;
                 Quaternion spreadRot = Quaternion.Euler(0, 0, spreadAngle);
                 Vector2 finalDir = spreadRot * dir;
 
-                float delay = GetParallelDelay(j, subCount);
-                StartCoroutine(SpawnDelayedBullet(delay, spawnPos, finalDir));
+                float verticalDelay = GetParallelDelay(j, subCount);
 
+                // 水平方向處理
+                int hCount = Mathf.Max(1, horizontalBulletCount);
+                float hTotalSpan = (hCount - 1) * horizontalSpacing;
+                for (int h = 0; h < hCount; h++)
+                {
+                    float hOffset = h * horizontalSpacing - hTotalSpan / 2f;
+                    Vector2 hPerp = dir; // 水平往前/後延伸，使用 dir 的方向為基礎
+                    Vector2 finalPos = verticalPos + hPerp * hOffset;
+
+                    float hDelay = GetHorizontalDelay(h, hCount);
+                    float totalDelay = verticalDelay + hDelay;
+
+                    StartCoroutine(SpawnDelayedBullet(totalDelay, finalPos, finalDir));
+                }
             }
+
 
         }
     }
+
+    private float GetHorizontalDelay(int index, int count)
+    {
+        int centerIndex = (count - 1) / 2;
+        int distanceFromCenter = Mathf.Abs(index - centerIndex);
+
+        if (horizontalCenterFiresFirst)
+            return horizontalSpawnDelay * distanceFromCenter;
+        else
+        {
+            int maxDistance = (count - 1) / 2;
+            return horizontalSpawnDelay * (maxDistance - distanceFromCenter);
+        }
+    }
+
 
     private float GetParallelDelay(int index, int count)
     {
