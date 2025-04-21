@@ -3,90 +3,106 @@ using UnityEngine;
 
 public class OrbitAroundTargetBehavior : BulletBehaviorBase
 {
-    public enum OrbitSpawnType
-    {
-        Instant,    // 立即出現在軌道上
-        FlyOut      // 從原地飛向軌道
-    }
+    public enum OrbitSpawnType { Instant, FlyOut }
+    public enum FlyOutStyle { Linear, Swirl }
+    public enum OrbitTargetType { Player, Enemy }
 
-    [Header("旋轉設定")]
-    public string orbitTargetTag = "OrbitCenter"; // 用 tag 自動找中心
+    [Header("目標設定")]
+    public OrbitTargetType targetType = OrbitTargetType.Enemy;
+    public string targetName = "Enemy(Clone)";
+    public string childObjectName = "OrbitCenter";
+
+    [Header("繞行設定")]
     public OrbitSpawnType spawnType = OrbitSpawnType.Instant;
+    public FlyOutStyle flyOutStyle = FlyOutStyle.Linear;
     public float flyOutTime = 0.5f;
-
-    public float orbitSpeed = 90f;    // 每秒旋轉角度
-    public float orbitRadius = 2f;    // 繞行半徑
+    public float orbitSpeed = 90f;
+    public float orbitRadius = 2f;
+    public float swirlSpeed = 360f;
     public bool clockwise = true;
 
-    private float currentAngle = 0f;
     private Transform orbitCenter;
+    private float currentAngle;
     private bool isOrbiting = false;
-
-    public enum FlyOutStyle
-    {
-        Linear,     // 原方式：直線移動
-        Swirl       // 螺旋方式：漸漸加入繞行角度
-    }
-
-    [Header("飛出方式")]
-    public FlyOutStyle flyOutStyle = FlyOutStyle.Linear;
-
-    [Tooltip("Swirl 飛行時的角速度 (度/秒)，僅在 Swirl 模式啟用")]
-    public float swirlSpeed = 360f;
-
 
     protected override void OnStart()
     {
-        // 找中心物件
+        if (bullet != null) bullet.Stop();
+        TrySetOrbitCenter(spawnType);
+    }
+
+    protected override void Tick(float deltaTime)
+    {
         if (orbitCenter == null)
         {
-            GameObject[] candidates = GameObject.FindGameObjectsWithTag(orbitTargetTag);
-            foreach (GameObject obj in candidates)
-            {
-                if (obj.GetComponent<BulletSpawner>() != null)
-                {
-                    orbitCenter = obj.transform;
-                    break;
-                }
-            }
+            TrySetOrbitCenter(OrbitSpawnType.FlyOut); // 玩家復活後重新飛向目標
+            return;
         }
 
-        if (orbitCenter == null || bullet == null)
-            return;
+        if (!isOrbiting || bullet == null) return;
 
-        Vector2 offset = (Vector2)bullet.transform.position - (Vector2)orbitCenter.position;
+        float angleDelta = orbitSpeed * deltaTime * (clockwise ? -1f : 1f);
+        currentAngle += angleDelta;
+        bullet.transform.position = GetOrbitPosition(currentAngle);
+    }
+
+    protected override void OnEnd()
+    {
+        if (bullet != null) bullet.Stop();
+    }
+
+    private void TrySetOrbitCenter(OrbitSpawnType flyMode)
+    {
+        Transform newCenter = FindOrbitCenter();
+        if (newCenter == null) return;
+
+        orbitCenter = newCenter;
+        Vector2 offset = bullet.transform.position - orbitCenter.position;
         currentAngle = Mathf.Atan2(offset.y, offset.x) * Mathf.Rad2Deg;
 
-        // 根據 spawn type 判斷初始行為
-        if (spawnType == OrbitSpawnType.Instant)
+        if (flyMode == OrbitSpawnType.Instant)
         {
-            SetBulletToOrbitPosition();
+            bullet.transform.position = GetOrbitPosition(currentAngle);
             isOrbiting = true;
         }
-        else if (spawnType == OrbitSpawnType.FlyOut)
+        else
         {
             Vector2 orbitPos = GetOrbitPosition(currentAngle);
             if (flyOutStyle == FlyOutStyle.Linear)
                 bullet.StartCoroutine(FlyToOrbitLinear(orbitPos));
             else
-                bullet.StartCoroutine(FlyToOrbitSwirl(targetAngle: currentAngle));
-
+                bullet.StartCoroutine(FlyToOrbitSwirl(currentAngle));
         }
     }
 
-    protected override void Tick(float deltaTime)
+    private Transform FindOrbitCenter()
     {
-        if (!isOrbiting || orbitCenter == null || bullet == null) return;
+        if (targetType == OrbitTargetType.Player)
+        {
+            var player = GameSystem.PlayerTransform;
+            if (player == null) return null;
 
-        float angleDelta = orbitSpeed * deltaTime * (clockwise ? -1f : 1f);
-        currentAngle += angleDelta;
+            var child = player.Find(childObjectName);
+            return child != null ? child : null;
+        }
 
-        bullet.transform.position = GetOrbitPosition(currentAngle);
-    }
+        if (targetType == OrbitTargetType.Enemy)
+        {
+            var system = GameObject.FindObjectOfType<GameSystem>();
+            if (system != null)
+            {
+                foreach (var enemy in system.GetActiveEnemies())
+                {
+                    if (enemy != null && enemy.name == targetName)
+                    {
+                        var child = enemy.transform.Find(childObjectName);
+                        if (child != null) return child;
+                    }
+                }
+            }
+        }
 
-    private void SetBulletToOrbitPosition()
-    {
-        bullet.transform.position = GetOrbitPosition(currentAngle);
+        return null;
     }
 
     private Vector2 GetOrbitPosition(float angle)
@@ -126,23 +142,19 @@ public class OrbitAroundTargetBehavior : BulletBehaviorBase
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / flyOutTime);
-
             float radius = Mathf.Lerp(startRadius, orbitRadius, t);
 
-            // ✅ 累加角度（受 swirlSpeed 控制）
             float swirlDelta = swirlSpeed * Time.deltaTime * (clockwise ? -1f : 1f);
             currentSwirlAngle += swirlDelta;
 
             bullet.transform.position = GetOrbitPositionAtAngle(currentSwirlAngle, radius);
-
             yield return null;
         }
 
-        currentAngle = currentSwirlAngle; // 用最終 swirl 角度繼續主繞行
+        currentAngle = currentSwirlAngle;
         bullet.transform.position = GetOrbitPosition(currentAngle);
         isOrbiting = true;
     }
-
 
     private Vector2 GetOrbitPositionAtAngle(float angleDeg, float radius)
     {
@@ -150,5 +162,4 @@ public class OrbitAroundTargetBehavior : BulletBehaviorBase
         Vector2 offset = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
         return (Vector2)orbitCenter.position + offset;
     }
-
 }

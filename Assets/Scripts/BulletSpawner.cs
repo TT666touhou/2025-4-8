@@ -90,6 +90,15 @@ public class BulletSpawner : MonoBehaviour
     public float fireAngleInversionInterval = 3f;
 
 
+    [Header("子彈管理")]
+    [Tooltip("當此 Spawner 被摧毀時，是否一併摧毀由它產生的子彈")]
+    public bool destroyBulletsOnSpawnerDestroyed = false;
+
+    // 紀錄此 Spawner 生成的子彈
+    private List<GameObject> spawnedBullets = new List<GameObject>();
+
+
+
     private float fireTimer = 0f;
     private Transform player;
     private float sweepAngle = 0f;
@@ -105,28 +114,29 @@ public class BulletSpawner : MonoBehaviour
 
     void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-            player = playerObj.transform;
+        player = GameSystem.PlayerTransform; // 用 GameSystem 的靜態參考
 
-        // 根據 prefab 中 OrbitAroundTargetBehavior 的 clockwise 設定初始化 spawner 預設方向
+        // OrbitBehavior 設定預設方向
         var orbit = bulletPrefab != null ? bulletPrefab.GetComponent<OrbitAroundTargetBehavior>() : null;
         if (orbit != null)
         {
             currentRotationClockwise = orbit.clockwise;
         }
 
-        // 控制是否立即開火
-        if (!fireImmediately)
-            fireTimer = 0f;
-        else
-            fireTimer = fireInterval; // 強制讓第一次可立即進入 Fire()
+        fireTimer = fireImmediately ? fireInterval : 0f;
     }
+
 
 
 
     void Update()
     {
+        if (player == null && (fireMode == FireMode.AimAtPlayer || fireMode == FireMode.EvenSpreadToPlayer))
+        {
+            player = GameSystem.PlayerTransform;
+        }
+
+
         if (isCoolingDown) return;
         if (!canFire) return;
 
@@ -324,11 +334,23 @@ public class BulletSpawner : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         GameObject bullet = Instantiate(bulletPrefab, position, Quaternion.identity);
+        spawnedBullets.Add(bullet);
         Bullet bulletScript = bullet.GetComponent<Bullet>();
         if (bulletScript != null)
         {
             bulletScript.Launch(direction, bulletSpeed, charaType);
             ApplyRotationDirection(bulletScript);
+        }
+    }
+    void OnDestroy()
+    {
+        if (destroyBulletsOnSpawnerDestroyed)
+        {
+            foreach (var bullet in spawnedBullets)
+            {
+                if (bullet != null)
+                    Destroy(bullet);
+            }
         }
     }
 

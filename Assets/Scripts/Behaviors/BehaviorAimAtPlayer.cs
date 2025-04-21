@@ -10,12 +10,17 @@ public class AimAtPlayerBehavior : BulletBehaviorBase
 
     protected override void OnStart()
     {
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        player = GameSystem.PlayerTransform;
     }
 
     protected override void Tick(float deltaTime)
     {
-        if (player == null) return;
+        // 若失去參考就再抓一次
+        if (player == null)
+        {
+            player = GameSystem.PlayerTransform;
+            if (player == null) return; // 仍然沒抓到就暫停
+        }
 
         Vector2 toPlayer = (player.position - bullet.transform.position).normalized;
         float angleToPlayer = Vector2.SignedAngle(bullet.Direction, toPlayer);
@@ -28,6 +33,6 @@ public class AimAtPlayerBehavior : BulletBehaviorBase
 
     protected override void OnEnd()
     {
-        // Optionally reset anything
+        // Optional cleanup
     }
 }

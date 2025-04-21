@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 1645576732375601720}
   - component: {fileID: 6242041929923448238}
   - component: {fileID: 7405679692694398979}
+  - component: {fileID: 8688519357803551242}
+  - component: {fileID: 6299637889177708280}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -83,9 +85,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8fc9efc9827145458ff90a05eaf46e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 100
+  maxHP: 20
   spriteRenderer: {fileID: 2081635315626868934}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &8688519357803551242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054967087466988823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e4319747fd89394e8843b13c9098e7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSpawnerName: EB_1
+  targetOffset: {x: 0.1, y: 3}
+  moveDuration: 1
+  triggerFireCount: 3
+  allowRepeat: 1
+  rotateOffsetPerStep: 180
+  rotationStepInterval: 1
+--- !u!114 &6299637889177708280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054967087466988823}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a41825c326ee59f448f7f3c17cde6608, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSpawnerName: EB_2
+  targetOffset: {x: 0, y: 2}
+  moveDuration: 0.5
+  repeatable: 1
+  rotateDirection: 1
+  rotateInterval: 1
+  rotateAngle: 60
 --- !u!1 &1118147056516735522
 GameObject:
   m_ObjectHideFlags: 0
@@ -182,7 +222,7 @@ GameObject:
   - component: {fileID: 4139145458653762812}
   m_Layer: 0
   m_Name: EB_2
-  m_TagString: OrbitCenter
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -245,6 +285,7 @@ MonoBehaviour:
   sweepSpeed: 120
   enableFireAngleInversion: 0
   fireAngleInversionInterval: 3
+  destroyBulletsOnSpawnerDestroyed: 0
 --- !u!1 &6676632388373273806
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,7 +298,7 @@ GameObject:
   - component: {fileID: 6037181067906218922}
   m_Layer: 0
   m_Name: EB_1
-  m_TagString: OrbitCenter
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -292,14 +333,14 @@ MonoBehaviour:
   charaType: 1
   canFire: 1
   bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
-  fireInterval: 1
+  fireInterval: 0.1
   fireCount: 1
   bulletSpeed: 3.5
   minAngle: -180
   maxAngle: 180
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 3
+  fireMode: 2
   fixedDirection: {x: -1, y: 0}
   globalAngleOffset: 0
   spawnOffsetDistance: 0
@@ -308,7 +349,7 @@ MonoBehaviour:
   fireImmediately: 1
   alternateRotationDirection: 1
   rotationToggleInterval: 0.7
-  parallelBulletCount: 5
+  parallelBulletCount: 1
   parallelSpacing: 0.1
   parallelAngleSpread: 0
   parallelSpawnDelay: 0.1
@@ -320,3 +361,4 @@ MonoBehaviour:
   sweepSpeed: 120
   enableFireAngleInversion: 0
   fireAngleInversionInterval: 3
+  destroyBulletsOnSpawnerDestroyed: 1

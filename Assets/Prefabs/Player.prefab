@@ -47,9 +47,9 @@ MonoBehaviour:
   charaType: 0
   canFire: 1
   bulletPrefab: {fileID: 2683555456252577315, guid: 67c1b4ee139991148bc458bcd9a050c4, type: 3}
-  fireInterval: 0.5
+  fireInterval: 0.1
   fireCount: 1
-  bulletSpeed: 10
+  bulletSpeed: 20
   minAngle: -15
   maxAngle: 15
   fireCountVariance: 0

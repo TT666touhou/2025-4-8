@@ -1,5 +1,4 @@
-﻿// GameSystem.cs
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,15 +6,13 @@ public class GameSystem : MonoBehaviour
 {
     [Header("玩家設定")]
     public GameObject playerPrefab;
-    [Header("玩家出生點（留空則使用座標）")]
-    public Transform playerSpawnPoint;
-    public Vector3 fallbackSpawnPosition = new Vector3(0f, -3f, 0f);
     public int maxLives = 3;
 
     [Header("敵人 Prefab 設定")]
     public List<GameObject> enemyPrefabs = new List<GameObject>();
 
     private GameObject currentPlayer;
+    public static Transform PlayerTransform { get; private set; }
     private int currentLives;
     private float gameTime;
 
@@ -36,7 +33,7 @@ public class GameSystem : MonoBehaviour
             {
                 triggerTime = 2f,
                 enemyPrefab = enemyPrefabs[0],
-                position = new Vector2(0, 4),
+                position = new Vector2(4, -1.5f),
                 hp = 120
             });
         }
@@ -51,7 +48,7 @@ public class GameSystem : MonoBehaviour
                 s.fireCount = 3;
                 s.fireMode = BulletSpawner.FireMode.EvenSpread;
                 s.bulletSpeed = 6f;
-                s.canFire = true;
+                s.canFire = false;
             }
         });
     }
@@ -75,7 +72,7 @@ public class GameSystem : MonoBehaviour
         if (currentLives > 0)
         {
             Debug.Log($"玩家復活，剩餘殘機：{currentLives}");
-            Invoke(nameof(SpawnPlayer), 1.5f);
+            SpawnPlayer();
         }
         else
         {
@@ -86,8 +83,16 @@ public class GameSystem : MonoBehaviour
 
     public void SpawnPlayer()
     {
-        Vector3 pos = playerSpawnPoint != null ? playerSpawnPoint.position : fallbackSpawnPosition;
-        currentPlayer = Instantiate(playerPrefab, pos, Quaternion.identity);
+        Vector3 entryPos = new Vector3(-10f, 0f, 0f);
+        currentPlayer = Instantiate(playerPrefab, entryPos, Quaternion.identity);
+        PlayerTransform = currentPlayer.transform;
+
+        // 啟動登場動畫
+        var control = currentPlayer.GetComponent<PlayerControl>();
+        if (control != null)
+        {
+            control.PlayEntryAnimation(new Vector3(-4f, 0f, 0f), 1.5f);
+        }
     }
 
     // ========= 敵人管理 ========= //

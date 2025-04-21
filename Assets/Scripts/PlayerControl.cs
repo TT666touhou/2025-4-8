@@ -1,48 +1,55 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerControl : MonoBehaviour
 {
     [Header("移動速度")]
     public int moveSpeed = 5;
+    public int slowSpeed = 1;
+
     [Header("血量設定")]
     public int hp = 100;
+
+    [Header("Sprite 設定")]
     public SpriteRenderer Sprite;
     [Header("受擊效果")]
     public Color hitColor = Color.red;
 
     private Color originalColor;
 
-    // Start is called before the first frame update
+    [Header("無敵狀態")]
+    public float invincibleDuration = 1.5f;
+    private bool isInvincible = false;
+
     void Start()
     {
         originalColor = Sprite.color;
+        StartCoroutine(InvincibilityEffect());
     }
 
-    // Update is called once per frame
     void Update()
+    {
+        HandleMovement();
+    }
+
+    void HandleMovement()
     {
         Vector3 moveDir = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.W))
-            moveDir.y += 1;
-        if (Input.GetKey(KeyCode.S))
-            moveDir.y -= 1;
-        if (Input.GetKey(KeyCode.A))
-            moveDir.x -= 1;
-        if (Input.GetKey(KeyCode.D))
-            moveDir.x += 1;
+        if (Input.GetKey(KeyCode.W)) moveDir.y += 1;
+        if (Input.GetKey(KeyCode.S)) moveDir.y -= 1;
+        if (Input.GetKey(KeyCode.A)) moveDir.x -= 1;
+        if (Input.GetKey(KeyCode.D)) moveDir.x += 1;
 
-        transform.position += moveDir.normalized * moveSpeed * Time.deltaTime;
-
-
+        float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? slowSpeed : moveSpeed;
+        transform.position += moveDir.normalized * currentSpeed * Time.deltaTime;
     }
 
     public void TakeDamage(int damage)
     {
+        if (isInvincible) return;
+
         hp -= damage;
-        //Debug.Log($"{gameObject.name} 被擊中，失去 {damage} HP，剩餘 HP: {hp}");
 
         StartCoroutine(HitEffect());
 
@@ -52,12 +59,11 @@ public class PlayerControl : MonoBehaviour
             FindObjectOfType<GameSystem>()?.OnPlayerDeath();
             Destroy(gameObject);
         }
-
     }
 
     IEnumerator HitEffect()
     {
-        Sprite.color = Color.red;
+        Sprite.color = hitColor;
 
         Transform visual = Sprite.transform;
         Vector3 originalLocalPos = visual.localPosition;
@@ -84,6 +90,61 @@ public class PlayerControl : MonoBehaviour
         Sprite.color = originalColor;
         visual.localPosition = originalLocalPos;
         visual.localScale = originalScale;
+    }
+
+    IEnumerator InvincibilityEffect()
+    {
+        isInvincible = true;
+        float timer = 0f;
+        bool fade = false;
+
+        while (timer < invincibleDuration)
+        {
+            float blinkSpeed = Mathf.Lerp(20f, 2f, timer / invincibleDuration);
+            float blinkInterval = 1f / blinkSpeed;
+
+            // 切換透明度
+            Color color = Sprite.color;
+            color.a = fade ? 0.5f : 1f;
+            Sprite.color = color;
+            fade = !fade;
+
+            yield return new WaitForSeconds(blinkInterval);
+            timer += blinkInterval;
+        }
+
+        // 恢復正常透明度
+        Color finalColor = Sprite.color;
+        finalColor.a = 1f;
+        Sprite.color = finalColor;
+
+        isInvincible = false;
+    }
+
+    public void PlayEntryAnimation(Vector3 targetPosition, float duration)
+    {
+        StartCoroutine(EntryAnimationCoroutine(targetPosition, duration));
+    }
+
+    private IEnumerator EntryAnimationCoroutine(Vector3 targetPosition, float duration)
+    {
+        Vector3 start = transform.position;
+        float elapsed = 0f;
+
+        isInvincible = true;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            transform.position = Vector3.Lerp(start, targetPosition, t);
+            yield return null;
+        }
+
+        transform.position = targetPosition;
+
+        // 開始無敵閃爍效果
+        StartCoroutine(InvincibilityEffect());
     }
 
 }
