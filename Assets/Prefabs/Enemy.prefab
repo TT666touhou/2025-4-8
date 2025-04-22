@@ -11,8 +11,7 @@ GameObject:
   - component: {fileID: 1645576732375601720}
   - component: {fileID: 6242041929923448238}
   - component: {fileID: 7405679692694398979}
-  - component: {fileID: 8688519357803551242}
-  - component: {fileID: 6299637889177708280}
+  - component: {fileID: 864299131240364397}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -88,7 +87,7 @@ MonoBehaviour:
   maxHP: 20
   spriteRenderer: {fileID: 2081635315626868934}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!114 &8688519357803551242
+--- !u!114 &864299131240364397
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -97,35 +96,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1054967087466988823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e4319747fd89394e8843b13c9098e7f, type: 3}
+  m_Script: {fileID: 11500000, guid: 6e2845f03134a324280aa8771ab794ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetSpawnerName: EB_1
-  targetOffset: {x: 0.1, y: 3}
-  moveDuration: 1
-  triggerFireCount: 3
-  allowRepeat: 1
-  rotateOffsetPerStep: 180
-  rotationStepInterval: 1
---- !u!114 &6299637889177708280
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1054967087466988823}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a41825c326ee59f448f7f3c17cde6608, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetSpawnerName: EB_2
-  targetOffset: {x: 0, y: 2}
-  moveDuration: 0.5
-  repeatable: 1
-  rotateDirection: 1
-  rotateInterval: 1
-  rotateAngle: 60
+  spawnTime: 0
 --- !u!1 &1118147056516735522
 GameObject:
   m_ObjectHideFlags: 0

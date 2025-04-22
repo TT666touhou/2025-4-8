@@ -55,7 +55,7 @@ MonoBehaviour:
   fireCountVariance: 0
   angleJitter: 0
   fireMode: 0
-  fixedDirection: {x: 1, y: 0}
+  fixedDirection: {x: 0, y: 1}
   globalAngleOffset: 0
   spawnOffsetDistance: 0
   maxFireCycles: -1
@@ -75,6 +75,7 @@ MonoBehaviour:
   sweepSpeed: 30
   enableFireAngleInversion: 0
   fireAngleInversionInterval: 3
+  destroyBulletsOnSpawnerDestroyed: 0
 --- !u!1 &3560505743759464461
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,9 +208,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  slowSpeed: 1
   hp: 1
   Sprite: {fileID: 2396801805236393886}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
+  invincibleDuration: 1.5
 --- !u!70 &4305788767977299642
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

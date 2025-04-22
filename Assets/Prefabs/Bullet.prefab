@@ -104,7 +104,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startTime: 0
-  endTime: 5
+  endTime: 0
   targetType: 1
   targetName: Enemy(Clone)
   childObjectName: EB_1

@@ -21,6 +21,10 @@ public class PlayerControl : MonoBehaviour
     public float invincibleDuration = 1.5f;
     private bool isInvincible = false;
 
+    // ========= 限制移動範圍 ========= //
+    private Vector2 minBoundary = new Vector2(-8f, -5f);
+    private Vector2 maxBoundary = new Vector2(0f, 5f);
+
     void Start()
     {
         originalColor = Sprite.color;
@@ -42,7 +46,13 @@ public class PlayerControl : MonoBehaviour
         if (Input.GetKey(KeyCode.D)) moveDir.x += 1;
 
         float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? slowSpeed : moveSpeed;
-        transform.position += moveDir.normalized * currentSpeed * Time.deltaTime;
+        Vector3 nextPos = transform.position + moveDir.normalized * currentSpeed * Time.deltaTime;
+
+        // 限制移動區域
+        nextPos.x = Mathf.Clamp(nextPos.x, minBoundary.x, maxBoundary.x);
+        nextPos.y = Mathf.Clamp(nextPos.y, minBoundary.y, maxBoundary.y);
+
+        transform.position = nextPos;
     }
 
     public void TakeDamage(int damage)
@@ -146,5 +156,4 @@ public class PlayerControl : MonoBehaviour
         // 開始無敵閃爍效果
         StartCoroutine(InvincibilityEffect());
     }
-
 }

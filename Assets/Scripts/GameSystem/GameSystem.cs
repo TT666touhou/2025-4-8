@@ -33,7 +33,7 @@ public class GameSystem : MonoBehaviour
             {
                 triggerTime = 2f,
                 enemyPrefab = enemyPrefabs[0],
-                position = new Vector2(4, -1.5f),
+                position = new Vector2(-4f,3.5f),
                 hp = 120
             });
         }
@@ -50,6 +50,13 @@ public class GameSystem : MonoBehaviour
                 s.bulletSpeed = 6f;
                 s.canFire = false;
             }
+        });
+
+        AddTimelineEvent(new ConditionalRemoveEnemyEvent
+        {
+            triggerTime = 10f,
+            targetEnemyName = "Enemy(Clone)",
+            maxExistTime = 7f
         });
     }
 
@@ -69,7 +76,7 @@ public class GameSystem : MonoBehaviour
     {
         currentLives--;
 
-        if (currentLives > 0)
+        if (currentLives >= 0)
         {
             Debug.Log($"玩家復活，剩餘殘機：{currentLives}");
             SpawnPlayer();
@@ -83,7 +90,7 @@ public class GameSystem : MonoBehaviour
 
     public void SpawnPlayer()
     {
-        Vector3 entryPos = new Vector3(-10f, 0f, 0f);
+        Vector3 entryPos = new Vector3(-4f, -6f, 0f);
         currentPlayer = Instantiate(playerPrefab, entryPos, Quaternion.identity);
         PlayerTransform = currentPlayer.transform;
 
@@ -91,7 +98,7 @@ public class GameSystem : MonoBehaviour
         var control = currentPlayer.GetComponent<PlayerControl>();
         if (control != null)
         {
-            control.PlayEntryAnimation(new Vector3(-4f, 0f, 0f), 1.5f);
+            control.PlayEntryAnimation(new Vector3(-4f, -2f, 0f), 1.5f);
         }
     }
 
