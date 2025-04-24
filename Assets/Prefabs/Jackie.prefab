@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7405679692694398979}
   - component: {fileID: 864299131240364397}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: Jackie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -195,7 +195,7 @@ GameObject:
   - component: {fileID: 2587636949932086281}
   - component: {fileID: 4139145458653762812}
   m_Layer: 0
-  m_Name: EB_2
+  m_Name: Jackie_BulletSpawner_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -271,7 +271,7 @@ GameObject:
   - component: {fileID: 4060644799449130582}
   - component: {fileID: 6037181067906218922}
   m_Layer: 0
-  m_Name: EB_1
+  m_Name: Jackie_BulletSpawner_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -40,12 +40,12 @@ public class GameSystem : MonoBehaviour
 
         AddTimelineEvent(new SpawnerModifyEvent
         {
-            triggerTime = 5f,
-            targetEnemyName = "Enemy(Clone)",
-            spawnerObjectName = "EB_2",
+            triggerTime = 2f,
+            targetEnemyName = "Jackie(Clone)",
+            spawnerObjectName = "Jackie_BulletSpawner_2",
             configAction = (s) =>
             {
-                s.fireCount = 3;
+                s.fireCount = 5;
                 s.fireMode = BulletSpawner.FireMode.EvenSpread;
                 s.bulletSpeed = 6f;
                 s.canFire = false;
@@ -58,6 +58,15 @@ public class GameSystem : MonoBehaviour
             targetEnemyName = "Enemy(Clone)",
             maxExistTime = 7f
         });
+
+        /* EXAMPLE
+        AddTimelineEvent(new ConditionalRemoveEnemyEvent
+        {
+            triggerTime = 10f,
+            targetEnemyName = "Enemy(Clone)",
+            dependencyEnemyName = "Boss(Clone)"
+        });
+        */
     }
 
     void Update()
@@ -100,6 +109,8 @@ public class GameSystem : MonoBehaviour
         {
             control.PlayEntryAnimation(new Vector3(-4f, -2f, 0f), 1.5f);
         }
+
+
     }
 
     // ========= 敵人管理 ========= //
