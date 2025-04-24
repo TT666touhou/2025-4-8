@@ -58,7 +58,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
       propertyPath: m_Name
-      value: Flower Variant
+      value: Flower
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -86,13 +86,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charaType: 1
+  canFire: 1
   bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
-  fireInterval: 0.2
-  fireCount: 30
+  fireInterval: 0.5
+  fireCount: 10
   bulletSpeed: 5
-  accuracy: 360
+  minAngle: -15
+  maxAngle: 15
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 2
+  fireMode: 3
   fixedDirection: {x: 0, y: -1}
+  globalAngleOffset: 0
+  spawnOffsetDistance: 0
+  maxFireCycles: -1
+  cooldownAfterCycle: 3
+  fireImmediately: 1
+  alternateRotationDirection: 0
+  rotationToggleInterval: 2
+  parallelBulletCount: 1
+  parallelSpacing: 0.1
+  parallelAngleSpread: 0
+  parallelSpawnDelay: 0
+  centerFiresFirst: 1
+  horizontalBulletCount: 1
+  horizontalSpacing: 0.1
+  horizontalSpawnDelay: 0
+  horizontalCenterFiresFirst: 1
   sweepSpeed: 30
+  enableFireAngleInversion: 0
+  fireAngleInversionInterval: 3
+  destroyBulletsOnSpawnerDestroyed: 0

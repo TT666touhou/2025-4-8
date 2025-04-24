@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 6242041929923448238}
   - component: {fileID: 7405679692694398979}
   - component: {fileID: 864299131240364397}
+  - component: {fileID: 3273903303916564597}
+  - component: {fileID: 7034070661116760376}
   m_Layer: 0
   m_Name: Jackie
   m_TagString: Untagged
@@ -100,6 +102,45 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnTime: 0
+--- !u!114 &3273903303916564597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054967087466988823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a41825c326ee59f448f7f3c17cde6608, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSpawnerName: Jackie_BulletSpawner_1
+  targetOffset: {x: 1, y: 0}
+  moveDuration: 1
+  repeatable: 1
+  rotateDirection: 1
+  rotateInterval: 2
+  rotateAngle: 180
+--- !u!114 &7034070661116760376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054967087466988823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ff47a58eab375f4f8c7877dad0b9fa4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSpawnerName: 
+  targetOffset: {x: 0, y: -6}
+  moveDuration: 1
+  triggerAfterSeconds: 2
+  repeatable: 0
+  rotateDirection: 0
+  rotateInterval: 1
+  rotateAngle: 90
 --- !u!1 &1118147056516735522
 GameObject:
   m_ObjectHideFlags: 0
@@ -305,16 +346,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charaType: 1
-  canFire: 1
+  canFire: 0
   bulletPrefab: {fileID: 3452334296597487251, guid: bbc38f0bf5b3fc644946c909a0b95325, type: 3}
-  fireInterval: 0.1
-  fireCount: 1
+  fireInterval: 1
+  fireCount: 3
   bulletSpeed: 3.5
   minAngle: -180
   maxAngle: 180
   fireCountVariance: 0
   angleJitter: 0
-  fireMode: 2
+  fireMode: 4
   fixedDirection: {x: -1, y: 0}
   globalAngleOffset: 0
   spawnOffsetDistance: 0
@@ -323,14 +364,14 @@ MonoBehaviour:
   fireImmediately: 1
   alternateRotationDirection: 1
   rotationToggleInterval: 0.7
-  parallelBulletCount: 1
+  parallelBulletCount: 10
   parallelSpacing: 0.1
-  parallelAngleSpread: 0
-  parallelSpawnDelay: 0.1
+  parallelAngleSpread: 30
+  parallelSpawnDelay: 0
   centerFiresFirst: 1
-  horizontalBulletCount: 1
-  horizontalSpacing: 0.1
-  horizontalSpawnDelay: 0
+  horizontalBulletCount: 3
+  horizontalSpacing: 0
+  horizontalSpawnDelay: 0.1
   horizontalCenterFiresFirst: 1
   sweepSpeed: 120
   enableFireAngleInversion: 0

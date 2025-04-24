@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameSystem : MonoBehaviour
 {
@@ -33,11 +34,41 @@ public class GameSystem : MonoBehaviour
             {
                 triggerTime = 2f,
                 enemyPrefab = enemyPrefabs[0],
-                position = new Vector2(-4f,3.5f),
-                hp = 120
+                position = new Vector2(-4f,14.5f),
+                hp = 40000
             });
         }
+        AddTimelineEvent(new SpawnerModifyEvent
+        {
+            triggerTime = 6f,
+            targetEnemyName = "Jackie(Clone)",
+            spawnerObjectName = "Jackie_BulletSpawner_1",
+            configAction = (s) =>
+            {
 
+                s.canFire = false;
+            }
+        });
+
+        AddTimelineEvent(new SpawnerModifyEvent
+        {
+            triggerTime = 6f,
+            targetEnemyName = "Jackie(Clone)",
+            spawnerObjectName = "Jackie_BulletSpawner_2",
+            configAction = (s) =>
+            {
+
+                s.canFire = true;
+            }
+        });
+        AddTimelineEvent(new SpawnEnemyEvent
+        {
+            triggerTime = 0f,
+            enemyPrefab = enemyPrefabs[1],
+            position = new Vector2(-4f, 5.5f),
+            hp = 100
+        });
+        /*
         AddTimelineEvent(new SpawnerModifyEvent
         {
             triggerTime = 2f,
@@ -45,11 +76,21 @@ public class GameSystem : MonoBehaviour
             spawnerObjectName = "Jackie_BulletSpawner_2",
             configAction = (s) =>
             {
+
                 s.fireCount = 5;
-                s.fireMode = BulletSpawner.FireMode.EvenSpread;
+                s.fireMode = BulletSpawner.FireMode.EvenSpreadToPlayer;
                 s.bulletSpeed = 6f;
+                s.fireInterval = 1f;
                 s.canFire = false;
             }
+        });
+        */
+        AddTimelineEvent(new SpawnEnemyEvent
+        {
+            triggerTime = 200f,
+            enemyPrefab = enemyPrefabs[1],
+            position = new Vector2(-10f, 3.5f),
+            hp = 40000
         });
 
         AddTimelineEvent(new ConditionalRemoveEnemyEvent
